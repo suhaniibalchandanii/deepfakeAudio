@@ -29,6 +29,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--balanced", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--stop-after",
+        type=int,
+        default=None,
+        help="Stop after this many newly written caches; use for Kaggle chunks.",
+    )
     return parser.parse_args()
 
 
@@ -44,11 +50,18 @@ def main() -> None:
     print("Selected label counts:")
     print(selected["label_text"].value_counts())
 
-    audio_index = build_audio_index(args.audio_root)
+    audio_index = build_audio_index(
+        args.audio_root,
+        wanted_audio_ids=set(selected["audio_id"].astype(str)),
+    )
+    missing_audio = set(selected["audio_id"].astype(str)) - set(audio_index)
+    print(f"Selected audio paths located: {len(audio_index)}")
+    print(f"Selected audio paths missing: {len(missing_audio)}")
     preprocessor = AudioPreprocessor(SETTINGS)
     handcrafted_extractor = HandcraftedFeatureExtractor(SETTINGS)
     xlsr = XLSREmbedder(SETTINGS)
     failures = []
+    newly_written = 0
 
     for row in tqdm(
         list(selected.itertuples(index=False)), desc="ASVspoof2021 features"
@@ -91,10 +104,19 @@ def main() -> None:
                 **bundle,
                 metadata_json=np.asarray(json.dumps(metadata)),
             )
+            newly_written += 1
         except Exception as error:
             failures.append(
                 {"audio_id": row.audio_id, "reason": repr(error)}
             )
+        if (
+            args.stop_after is not None
+            and newly_written >= args.stop_after
+        ):
+            print(
+                f"Clean stop after {newly_written} newly written caches."
+            )
+            break
 
     completed = selected[
         selected["audio_id"].map(
@@ -105,6 +127,7 @@ def main() -> None:
     failure_path = output_dir / "failures.json"
     failure_path.write_text(json.dumps(failures, indent=2), encoding="utf-8")
     print(f"Completed caches: {len(completed)}")
+    print(f"New caches this run: {newly_written}")
     print(f"Failures this run: {len(failures)}")
     print(f"Cache: {output_dir}")
 

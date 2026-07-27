@@ -65,17 +65,35 @@ def select_reproducible_subset(
         return frame.sample(n=max_samples, random_state=seed).reset_index(
             drop=True
         )
-    counts = {0: max_samples // 2, 1: max_samples - max_samples // 2}
-    selected = []
-    for label, requested in counts.items():
-        group = frame[frame["label"] == label]
-        if len(group) < requested:
+    groups = {
+        label: frame[frame["label"] == label]
+        for label in (0, 1)
+    }
+    target_each = max_samples // 2
+    counts = {
+        label: min(target_each, len(group))
+        for label, group in groups.items()
+    }
+    remaining = max_samples - sum(counts.values())
+    while remaining > 0:
+        available = {
+            label: len(groups[label]) - counts[label]
+            for label in (0, 1)
+        }
+        label = max(available, key=available.get)
+        if available[label] <= 0:
             raise ValueError(
-                f"Requested {requested} label={label} rows, only "
-                f"{len(group)} are available."
+                f"Only {len(frame)} total rows are available; "
+                f"cannot select {max_samples}."
             )
+        addition = min(remaining, available[label])
+        counts[label] += addition
+        remaining -= addition
+
+    selected = []
+    for label, count in counts.items():
         selected.append(
-            group.sample(n=requested, random_state=seed + label)
+            groups[label].sample(n=count, random_state=seed + label)
         )
     return (
         pd.concat(selected)
@@ -84,18 +102,30 @@ def select_reproducible_subset(
     )
 
 
-def build_audio_index(audio_root: Path) -> dict[str, Path]:
-    extensions = ("*.flac", "*.wav")
-    paths = []
-    for extension in extensions:
-        paths.extend(Path(audio_root).rglob(extension))
+def build_audio_index(
+    audio_root: Path,
+    wanted_audio_ids: set[str] | None = None,
+) -> dict[str, Path]:
+    """Stream paths and retain only requested IDs instead of all 181k files."""
     index = {}
     duplicates = set()
-    for path in paths:
-        if path.stem in index:
-            duplicates.add(path.stem)
-        else:
-            index[path.stem] = path
+    root = Path(audio_root)
+    for extension in ("*.flac", "*.wav"):
+        for path in root.rglob(extension):
+            audio_id = path.stem
+            if wanted_audio_ids is not None and audio_id not in wanted_audio_ids:
+                continue
+            if audio_id in index:
+                duplicates.add(audio_id)
+            else:
+                index[audio_id] = path
+            if (
+                wanted_audio_ids is not None
+                and len(index) == len(wanted_audio_ids)
+            ):
+                break
+        if wanted_audio_ids is not None and len(index) == len(wanted_audio_ids):
+            break
     if duplicates:
         print(
             f"Warning: {len(duplicates)} duplicate audio stems were found; "
