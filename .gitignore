@@ -1,0 +1,97 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+kaggle.json
+access_token
+*.pem
+*.key
+secrets/
+credentials/
+
+# VS Code and IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# Datasets and audio
+data/
+datasets/
+*.flac
+*.wav
+*.mp3
+*.aac
+*.m4a
+*.ogg
+
+# Extracted features and embeddings
+cache/
+*.npy
+*.npz
+*.pkl
+*.pickle
+
+# Model checkpoints
+checkpoints/
+models/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+
+# Personalized user memory
+memory/
+user_memory/
+audit.jsonl
+
+# Experiment outputs
+outputs/
+results/
+logs/
+runs/
+wandb/
+lightning_logs/
+
+# Archives and downloaded data
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Jupyter runtime files
+.ipynb_checkpoints/
+
+# Hugging Face model cache
+.huggingface/
+hf_cache/
+transformers_cache/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
