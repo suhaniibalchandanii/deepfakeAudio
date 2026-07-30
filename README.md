@@ -48,7 +48,7 @@ The system combines:
 ## Architecture
 
 <p align="center">
-  <img src="assets/high-level-architecture.jpg"
+  <img src="high-level-architecture.jpg"
        alt="High-level architecture of the memory-augmented deepfake audio detector"
        width="680">
 </p>
@@ -57,7 +57,7 @@ The system combines:
 <summary><strong>View the low-level pipeline</strong></summary>
 <br>
 <p align="center">
-  <img src="assets/low-level-architecture.jpg"
+  <img src="low-level-architecture.jpg"
        alt="Low-level design of feature extraction, representation learning, memory retrieval, and classification"
        width="720">
 </p>
@@ -233,7 +233,7 @@ Phase 7 writes publication-oriented artifacts to `outputs/phase7/<split>/`:
 | `reference_ablation.csv` | Numerical values behind the ablation plot |
 
 <p align="center">
-  <img src="assets/low-level-architecture.jpg"
+  <img src="low-level-architecture.jpg"
        alt="Visual output showing the complete personalized detection pipeline"
        width="650">
 </p>
