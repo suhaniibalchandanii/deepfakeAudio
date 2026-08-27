@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2%2B-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Transformers](https://img.shields.io/badge/🤗%20Transformers-4.40%2B-FFD21E)](https://huggingface.co/docs/transformers/)
-[![Dataset](https://img.shields.io/badge/Datasets-ASVspoof%202019%20%7C%202021-6A5ACD)](https://www.asvspoof.org/)
+[![Dataset](https://img.shields.io/badge/Dataset-ASVspoof%202019%20LA-6A5ACD)](https://www.asvspoof.org/)
 [![Status](https://img.shields.io/badge/Status-Research%20Prototype-F59E0B)](#project-status)
 
 Detects spoofed speech at two levels: **general audio authenticity** and
@@ -41,9 +41,9 @@ The system combines:
   gating, and controlled memory updates
 
 > [!NOTE]
-> The original system design targets **ASVspoof5**. The current repository
-> implements the main training pipeline on **ASVspoof2019 LA** and cross-dataset
-> evaluation on **ASVspoof2021 LA**.
+> This repository is intentionally limited to the **ASVspoof2019 LA** training,
+> personalization, calibration, and held-out evaluation workflow. Cross-dataset
+> ASVspoof2021 experiments live in a separate repository.
 
 ## Architecture
 
@@ -82,7 +82,8 @@ The system combines:
 
 ```text
 deepfakeAudio/
-├── assets/                     # README architecture visuals
+├── high-level-architecture.jpg
+├── low-level-architecture.jpg
 ├── src/
 │   ├── audio.py                # Loading, normalization, and segmentation
 │   ├── features.py             # Acoustic, prosodic, spectral, physics features
@@ -93,8 +94,7 @@ deepfakeAudio/
 │   ├── memory_phase4.py        # Per-user embedding memory
 │   ├── model_phase5.py         # Learned memory-attention module
 │   ├── online_detector_phase6.py
-│   ├── evaluate_phase7.py      # Paper-ready evaluation and plots
-│   └── evaluate_phase8.py      # ASVspoof2021 cross-dataset evaluation
+│   └── evaluate_phase7.py      # Paper-ready evaluation and plots
 ├── smoke_test*.py              # Phase-level sanity checks
 └── requirements.txt
 ```
@@ -146,7 +146,7 @@ export ASVSPOOF_LA_ROOT="/absolute/path/to/ASVspoof2019/LA"
 
 ## Implementation pipeline
 
-The repository is organized as eight reproducible phases.
+The repository is organized as seven reproducible phases.
 
 | Phase | Purpose | Main command |
 |:---:|---|---|
@@ -157,7 +157,6 @@ The repository is organized as eight reproducible phases.
 | 5 | Train learned memory attention | `python -m src.cache_phase5_embeddings --split train` |
 | 6 | Calibrate confidence gates and online inference | `python -m src.calibrate_phase6` |
 | 7 | Produce held-out, paper-ready evaluation | `python -m src.evaluate_phase7 --split eval` |
-| 8 | Test generalization on ASVspoof2021 LA | `python -m src.evaluate_phase8` |
 
 For Phase 5, cache the `train`, `dev`, and required evaluation embeddings before
 running:
@@ -177,7 +176,6 @@ python smoke_test_phase3.py
 python smoke_test_phase4.py
 python smoke_test_phase5.py
 python smoke_test_phase7.py
-python smoke_test_phase8.py
 ```
 
 ## Personalized inference
@@ -259,10 +257,9 @@ only when its paired 95% confidence interval lies entirely above zero.
 ## Project status
 
 This is an active research prototype, not a production authentication system.
-The repository currently contains the staged pipeline through cross-dataset
+The repository contains the complete ASVspoof2019 LA pipeline through held-out
 evaluation. Model checkpoints, datasets, cached features, user memories, and
-generated results are expected to remain local because of their size and
-sensitivity.
+generated results remain local because of their size and sensitivity.
 
 ### Known scope notes
 
